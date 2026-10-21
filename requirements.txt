@@ -1,0 +1,24 @@
+# Core deep-learning stack
+torch>=1.10
+torch-geometric>=2.0
+pytorch-metric-learning>=1.0
+
+# Graph construction (netlist graph / data flow graph)
+circuitgraph>=0.2.12
+pyverilog>=1.3.0
+networkx>=2.6
+
+# Metrics and data handling
+scikit-learn>=1.0
+numpy>=1.21
+pandas>=1.3
+
+# Visualisation and utilities
+matplotlib>=3.4
+umap-learn>=0.5
+tqdm>=4.62
+pyyaml>=5.4
+
+# Optional: model inspection cells in the training notebooks
+# torchsummary
+# torchviz

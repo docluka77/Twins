@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Notebooks
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/
+
+# Editors
+.idea/
+.vscode/
+.DS_Store
+
+# Large intermediate artifacts: graph datasets, checkpoints, embeddings.
+# The released Twins-v2 checkpoint is the only .pt that is tracked.
+*.pt
+*.pth
+*.pkl
+*.tsv
+!models/*.pt
+
+# Raw and processed circuit data
+dataset/Trust-Hub_Hardware Obfuscation Modified/
+dataset/DFG-new.pt
+dataset/NetlistGraph-node_type.pt
