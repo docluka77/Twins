@@ -15,12 +15,10 @@ dist/
 .DS_Store
 
 # Large intermediate artifacts: graph datasets, checkpoints, embeddings.
-# The released Twins-v2 checkpoint is the only .pt that is tracked.
 *.pt
 *.pth
 *.pkl
 *.tsv
-!models/*.pt
 
 # Raw and processed circuit data
 dataset/Trust-Hub_Hardware Obfuscation Modified/

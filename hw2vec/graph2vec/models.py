@@ -8,6 +8,7 @@
 #python_version  :3.6
 #==============================================================================
 import json
+import copy
 from pathlib import Path
 import torch
 import torch.nn as nn
@@ -69,6 +70,10 @@ class GRAPH2VEC(nn.Module):
         super(GRAPH2VEC, self).__init__()
         self.config = config
         self.cfg    = config
+        # 10 node types in a gate-level netlist: input, and, nand, or, nor,
+        # not, buf, xor, xnor, output.
+        if getattr(config, "num_node_type", None) is None:
+            config.num_node_type = 10
         self.bn     = norm.BatchNorm(config.hidden*3*2).to(config.device)
     def save_model(self, model_config_path, model_weight_path):
         Path(model_config_path).parent.mkdir(parents=True, exist_ok=True)
@@ -119,16 +124,23 @@ class GRAPH2VEC(nn.Module):
         self.layers = nn.ModuleList(self.layers)
 
     def set_graph_conv_node_type(self, convs):
+        """Build one independent convolution per node type, for every layer.
+
+        Node-independent message passing needs a separate weight set for each
+        node type, so every layer is expanded into ``num_node_type`` distinct
+        modules. The layers are kept in a ``nn.ModuleList`` so that they are
+        registered on the module and therefore reachable from
+        ``parameters()``, ``to(device)`` and ``state_dict()``.
+        """
+        num_node_type = self.config.num_node_type
         layers = []
-        
+
         for conv in convs:
-            temp = []
-            for i in range(10):
-                conv.to(self.config.device)
-                temp.append(conv)
+            conv.to(self.config.device)
+            temp = [copy.deepcopy(conv) for _ in range(num_node_type)]
             layers.append(nn.ModuleList(temp))
 
-        self.layers = layers
+        self.layers = nn.ModuleList(layers)
 
     def set_graph_pool(self, pool_layer):
         self.pool1 = pool_layer.to(self.config.device)
@@ -180,13 +192,13 @@ class GRAPH2VEC(nn.Module):
         # exit(0)
         for layer in self.layers:
             temp = []
-            for i in range(10):
+            for i in range(self.config.num_node_type):
                 # mask = (node_type == i)
                 zz = layer[i](x, edge_index)
                 temp.append(zz)
             # tempx = torch.zeros(x.shape[0], temp[0].shape[1]).to(self.config.device)
             tempx = torch.zeros(x.shape[0], temp[0].shape[1], device=self.config.device)
-            for i in range(10):
+            for i in range(self.config.num_node_type):
                 mask = (node_type == i)
                 # tempx = torch.zeros(x.shape[0], temp[0].shape[1]).to(self.config.device)  # NCRZ
                 tempx[mask] = temp[i][mask]
